@@ -50,7 +50,6 @@ export default function Profile() {
 
         <Form>
         <FormInput
-            icon="person-outline"
             autoCorrect={false}
             autoCapitalize="words"
             placeholder="Nome completo"
@@ -60,7 +59,6 @@ export default function Profile() {
             onChangeText={setName}
           />
           <FormInput
-            icon="mail-outline"
             keyboardType="email-address"
             autoCorrect={false}
             autoCapitalize="none"
@@ -75,9 +73,8 @@ export default function Profile() {
           <Separator/>
 
           <FormInput
-            icon="lock-outline"
             secureTextEntry
-            placeholder="Sua senha atual"
+            placeholder="Senha atual"
             ref={oldPasswordRef}
             returnKeyType="next"
             onSubmitEditing={() => passwordRef.current.focus()}
@@ -86,9 +83,8 @@ export default function Profile() {
           />
 
           <FormInput
-            icon="lock-outline"
             secureTextEntry
-            placeholder="Sua nova senha"
+            placeholder="Nova senha"
             ref={passwordRef}
             returnKeyType="next"
             onSubmitEditing={() => confirmPasswordRef.current.focus()}
@@ -97,9 +93,8 @@ export default function Profile() {
           />
 
           <FormInput
-            icon="lock-outline"
             secureTextEntry
-            placeholder="Confirme sua nova senha"
+            placeholder="Confirmação de senha"
             ref={confirmPasswordRef}
             returnKeyType="send"
             onSubmitEditing={handleSubmit}

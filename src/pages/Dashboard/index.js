@@ -1,65 +1,103 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
+import { TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { withNavigationFocus } from 'react-navigation';
-
+import {
+  format,
+  subDays,
+  addDays,
+} from "date-fns";
+import pt from "date-fns/locale/pt";
 import api from '~/services/api';
 
-import { signOut } from '~/store/modules/auth/actions';
-
-import { Container, Title, List } from './styles';
+import { Container, List, Text, HeaderView } from './styles';
 
 import Background from '~/components/Background';
-import Appointment from '~/components/Appointment';
+import Meetup from '~/components/Meetup';
+import Header from '~/components/Header';
 
-function Dashboard({ isFocused }) {
-  const [appointments, setAppointments] = useState([]);
+export default function Dashboard({ isFocused }) {
+  const [date, setDate] = useState(new Date());
+  const [meetups, setMeetups] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
+  const [page, setPage] = useState(1);
 
-  async function loadAppointments() {
-    const response = await api.get('appointments');
+  async function loadMeetups(selectedPage = 1) {
+    if (selectedPage > 1 && !hasMore) return;
 
-    setAppointments(response.data);
-  }
+  const dateFormatted = useMemo(
+    () => format(date, "d 'de' MMMM", { locale: pt }),
+    [date]
+  );
 
   useEffect(() => {
-    if(isFocused){
-      loadAppointments();
+    async function loadMeetups() {
+
+      const response = await api.get("meetups", {
+        query: { date }
+      });
+
+      setMeetups(response.data);
     }
-  },[isFocused]);
+    loadMeetups();
+  }, [date]);
 
-  async function handleCancel(id) {
-    const response = await api.delete(`appointments/${id}`);
+  useEffect(() => {
+    if (isFocused) {
+      setLoading(true);
+      loadMeetups();
+    }
+  }, [isFocused, date]);
 
-    setAppointments(
-      appointments.map(appointment =>
-        appointment.id === id
-          ? {
-              ...appointment,
-              canceled_at: response.data.canceled_at,
-            }
-          : appointment
-      )
-    );
+  function handlePrevDay() {
+    setDate(subDays(date, 1));
   }
 
-  const dispatch = useDispatch();
+  function handleNextDay() {
+    setDate(addDays(date, 1));
+  }
 
-  function handleLogout(){
-    dispatch(signOut())
+  async function handleRegister(id) {
+    try {
+      await api.post(`meetups/${id}/subscriptions`);
+      Alert.alert('Sucesso', 'Você está inscrito nesta meetup!');
+    } catch (error) {
+      const message = error.response.data.error;
+      Alert.alert('Erro', message);
+    }
   }
 
   return (
     <Background>
       <Container>
-        <Title>Agendamentos</Title>
-
-        <List
-          data={appointments}
-          keyExtractor={item => String(item.id)}
-          renderItem={({ item }) => (
-            <Appointment onCancel={() => handleCancel(item.id)} data={item} />
-          )}
-        />
+        <Header/>
+        <HeaderView>
+          <TouchableOpacity onPress={handlePrevDay}>
+            <MaterialIcons name="chevron-left" size={36} color="#FFF" />
+          </TouchableOpacity>
+          <Text>{dateFormatted}</Text>
+          <TouchableOpacity onPress={handleNextDay}>
+            <MaterialIcons name="chevron-right" size={36} color="#FFF" />
+          </TouchableOpacity>
+        </HeaderView>
+        {
+          (meetups.length ? (
+            <List
+              data={meetups}
+              keyExtractor={item => String(item.id)}
+              renderItem={({ item }) => (
+                <Meetup
+                  onCancel={() => handleCancel(item.id)}
+                  onRegister={() => handleRegister(item.id)}
+                  data={item}
+                />
+              )}
+            />
+          ) : (
+            <Text>Não há Meetups neste dia</Text>
+          )
+        )}
       </Container>
     </Background>
   );
@@ -67,8 +105,6 @@ function Dashboard({ isFocused }) {
 }
 
 Dashboard.navigationOptions = {
-  tabBarLabel: 'Agendamentos',
-  tabBarIcon: ({ tintColor }) => (<MaterialIcons name="event" size={20} color={tintColor} />),
+  tabBarLabel: 'Meetups',
+  tabBarIcon: ({ tintColor }) => (<MaterialIcons name="format-list-bulleted" size={20} color={tintColor} />),
 }
-
-export default withNavigationFocus(Dashboard);

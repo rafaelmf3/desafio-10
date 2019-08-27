@@ -5,7 +5,7 @@ import {
   createBottomTabNavigator,
   createStackNavigator
 } from "react-navigation";
-import { MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome } from "@expo/vector-icons";
 
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
@@ -47,10 +47,10 @@ export default (isSigned = false) =>
               ),
               navigationOptions: {
                 tabBarVisible: false,
-                tabBarLabel: "Agendar",
+                tabBarLabel: "Inscrições",
                 tabBarIcon: (
-                  <MaterialIcons
-                    name="add-circle-outline"
+                  <FontAwesome
+                    name="tag"
                     size={20}
                     color="rgba(255,255,255,0.6)"
                   />
@@ -66,7 +66,7 @@ export default (isSigned = false) =>
               activeTintColor: "#fff",
               inactiveTintColor: "rgba(255,255,255,0.6)",
               style: {
-                backgroundColor: "#8d41a8"
+                backgroundColor: "#2B1A2F"
               }
             }
           }
